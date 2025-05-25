@@ -6,12 +6,13 @@
  */
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
+import type { PropsWithChildren } from 'react';
 import {
+
   ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
+
   useColorScheme,
   View,
 } from 'react-native';
@@ -23,12 +24,18 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import { ActivityIndicator, Dialog, MD2Colors, PaperProvider, Portal, Button, Text, Icon } from 'react-native-paper';
+import { Checkbox } from 'react-native-paper';
+
+
+
+
 
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
-function Section({children, title}: SectionProps): React.JSX.Element {
+function Section({ children, title }: SectionProps): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -61,29 +68,45 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
+  const [visible, setVisible] = React.useState(false);
+
+  const showDialog = () => setVisible(true);
+
+  const hideDialog = () => setVisible(false);
+  const [checked, setChecked] = React.useState(false);
+
   const safePadding = '5%';
 
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
+    <PaperProvider>
+      <View style={backgroundStyle}>
+
+
+
+
+        <Portal>
+          <Dialog visible={visible} onDismiss={hideDialog}>
+            <Dialog.Title>Alert</Dialog.Title>
+            <Dialog.Content>
+              <Text variant="bodyMedium">This is simple dialog</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={hideDialog}>Done</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+
+
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
+        />
+        <ScrollView
+          style={backgroundStyle}>
+          {/* <View style={{paddingRight: safePadding}}>
           <Header/>
-        </View>
-        <View
+        </View> */}
+          {/* <View
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
             paddingHorizontal: safePadding,
@@ -103,9 +126,29 @@ function App(): React.JSX.Element {
             Read the docs to discover what to do next:
           </Section>
           <LearnMoreLinks />
+        </View> */}
+          <Text style={{ color: (isDarkMode) ? '#fff' : '#000000' }}>Spin App{(isDarkMode) ? 'dark' : 'light'}</Text>
+          <ActivityIndicator animating={true} color={(isDarkMode) ? '#fff' : '#000000'} />
+          <Button onPress={showDialog}>Show Dialog</Button>
+
+
+          <Icon
+            source="camera"
+            color={'red'}
+            size={20}
+          />
+
+        </ScrollView>
+        <View style={{ display: 'flex', justifyContent: 'center' }}>
+          <Checkbox
+            status={checked ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setChecked(!checked);
+            }}
+          />
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </PaperProvider>
   );
 }
 
