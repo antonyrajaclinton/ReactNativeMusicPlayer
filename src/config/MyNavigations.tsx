@@ -1,13 +1,28 @@
-import React from 'react';
-import SignIn from '../pages/auth/SignIn';
+import { lazy } from 'react';
+import { View, Text } from 'react-native';
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 
-const MyRoutes = () => {
-    return (
-        <>
-            <SignIn />
-        </>
-    )
-}
+//routes:
 
-export default MyRoutes
+ 
+const SignIn = lazy(() => import('../pages/auth/SignIn'));
+
+ 
+const RootStack = createNativeStackNavigator({
+    initialRouteName: 'signIn',
+    screens: {
+        signIn: {
+            screen: SignIn,
+            options: {
+                headerShown: false
+            }
+        },
+
+    },
+
+});
+
+export default createStaticNavigation(RootStack);
+
