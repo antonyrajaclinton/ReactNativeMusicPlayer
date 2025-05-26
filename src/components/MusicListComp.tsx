@@ -1,33 +1,42 @@
-import { FC, Fragment } from "react";
+import { FC, Fragment, useRef, useState } from "react";
 import { View } from "react-native";
 import { Divider, List, Text } from "react-native-paper";
 import { MusicListTypes } from "../utilities/global.types";
-import TrackPlayer from 'react-native-track-player';
+// import Sound from 'react-native-sound';
+import soundManager from "../utilities/soundManager";
 
 
-
+// Sound.setCategory('Playback');
 
 interface PropsType {
     musicsList: MusicListTypes[]
 }
 
 const MusicListComp: FC<PropsType> = ({ musicsList }) => {
-
+    // const whoosh: any = useRef(null);
     const playFile = async (uri: string) => {
-        await TrackPlayer.setupPlayer()
 
-        console.log(uri);
 
-        // const sound = new Sound('file://' + uri, Sound.MAIN_BUNDLE, (error:any) => {
-        //     if (error) {
-        //         console.log('error loading file:', error);
-        //         return;
-        //     }
-        //       console.log('duration in seconds: ' + sound.getDuration() + 'number of channels: ' + sound.getNumberOfChannels());
+        try {
 
-        //     // sound.play();
-        // });
+            soundManager.playSound('file://' + uri);
+
+
+            // console.log('volume: ' + whoosh.current.getVolume());
+            // console.log('pan: ' + whoosh.current.getPan());
+            // console.log('loops: ' + whoosh.current.getNumberOfLoops());
+        } catch (error) {
+            console.log(error);
+
+
+        }
+
+
+
+
     };
+
+   
     return (
         <>
             <View>

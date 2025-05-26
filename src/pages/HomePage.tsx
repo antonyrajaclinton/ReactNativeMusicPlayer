@@ -10,7 +10,7 @@ import MusicListComp from '../components/MusicListComp';
 import { MusicListTypes } from '../utilities/global.types';
 import SpinAnimationComp from '../components/animation/SpinAnimationComp';
 
-
+import soundManager from '../utilities/soundManager';
 
 
 const HomePage = () => {
@@ -39,9 +39,11 @@ const HomePage = () => {
         })
     }, []);
 
- 
 
 
+    const resumeSong = () => {
+        soundManager.resumeSound();
+    }
 
 
 
@@ -65,13 +67,13 @@ const HomePage = () => {
                                 <Icon source="music-circle-outline" size={35} />
                             </SpinAnimationComp>
                             <View>
-                                <Text numberOfLines={1} > sdafdafas sdffffffffffffffffffffffffffffff </Text>
+                                <Text numberOfLines={1} > song name</Text>
                             </View>
 
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', width: '50%', justifyContent: 'flex-end' }}>
                             <IconButton icon="skip-backward" size={20} onPress={() => console.log('Pressed')} />
-                            <IconButton icon="play" size={20} onPress={() => console.log('Pressed')} />
+                            <IconButton icon="play" size={20} onPress={() => resumeSong()} />
                             <IconButton icon="skip-forward" size={20} onPress={() => console.log('Pressed')} />
                         </View>
 
