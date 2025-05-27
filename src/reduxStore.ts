@@ -1,10 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux';
-import mediaPlayeControls from './reduxReducers/mediaPlayerControls';
+import mediaPlayerControls from './reduxReducers/mediaPlayerControls';
+import mediaPlayerDatas from './reduxReducers/mediaPlayerDatas';
+import snackbarSlice from './reduxReducers/snackbarSlice';
 
 export const store = configureStore({
     reducer: {
-        mediaPlayerControls: mediaPlayeControls
+        mediaPlayerControls: mediaPlayerControls,
+        mediaPlayerDatas: mediaPlayerDatas,
+        snackbar: snackbarSlice
     },
 })
 

@@ -4,31 +4,31 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 // Define a type for the slice state
 interface CounterState {
-  playerStatus: boolean
+  isMediaPlaying: boolean
 }
 
 // Define the initial state using that type
 const initialState: CounterState = {
-  playerStatus: false
+  isMediaPlaying: false
 }
 
 export const counterSlice = createSlice({
   name: 'mediaPlayerControls',
   initialState,
   reducers: {
-    startPlayer: (state) => {
-      state.playerStatus = true;
+    setPlayerStatus: (state,action: PayloadAction<boolean>) => {
+      state.isMediaPlaying = action.payload;
     },
-    pausePlayer: (state) => {
-      state.playerStatus = false;
-    },
+    // setPlayerPause: (state) => {
+    //   state.isMediaPlaying = false;
+    // },
     // incrementByAmount: (state, action: PayloadAction<number>) => {
     //   state.value += action.payload
     // },
   },
 })
 
-export const { startPlayer, pausePlayer } = counterSlice.actions
+export const { setPlayerStatus, } = counterSlice.actions
 
 // export const selectCount = (state: RootState) => state.counter.value
 

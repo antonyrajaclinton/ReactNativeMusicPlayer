@@ -5,7 +5,7 @@ import { Button, Divider, HelperText, Text, TextInput, useTheme } from 'react-na
 // import { NavigationProp } from '@react-navigation/native';
 import environmentConfig from '../../../environment.config';
 import { AppThemeType } from '../../config/MyThemes';
-import soundManager from '../../utilities/soundManager';
+// import soundManager from '../../utilities/soundManager';
 
 
 const SignIn = () => {
@@ -16,7 +16,7 @@ const SignIn = () => {
 
 
     const handleSubmit = () => {
-        soundManager.pauseSound();
+        // soundManager.pauseSound();
         Alert.alert('Message', 'This is not developed yet...!', [
             { text: 'OK', onPress: () => console.log('OK Pressed') },
         ]);

@@ -1,50 +1,73 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, View, BackHandler, StyleSheet, Animated, Easing } from 'react-native';
+import React, { useEffect } from 'react';
+import { Alert, View, BackHandler, ActivityIndicator } from 'react-native';
 import { Text, useTheme, Appbar, Button, Icon, IconButton } from 'react-native-paper';
 import { requestStoragePermission, openAppSetting } from '../utilities/requestPermissions';
-
 import { readAllFilesByExtension } from '../utilities/fileOperation';
 import environmentConfig from '../../environment.config';
 import { AppThemeType } from '../config/MyThemes';
 import MusicListComp from '../components/MusicListComp';
-import { MusicListTypes } from '../utilities/global.types';
 import SpinAnimationComp from '../components/animation/SpinAnimationComp';
 
-import soundManager from '../utilities/soundManager';
-
+import { useAppDispatch, useAppSelector } from '../reduxStore';
+import { setSongLists, setMediaisLoading, setMediaTotalCount } from '../reduxReducers/mediaPlayerDatas';
+import useAppSnackbar from '../components/customHooks/useAppSnackbar';
+import { useMediaPlayerStatus, useMediaResumeControl, useMediaPauseControl, useMediaForwardBackwardControl } from '../components/customHooks/useMediaController';
 
 const HomePage = () => {
     const getPaperTheme = useTheme<AppThemeType>();
     // const navigation = useNavigation();
+    const appDispatch = useAppDispatch();
+    const appSnackbar = useAppSnackbar();
+    const appMediaPlayerDetails = useMediaPlayerStatus();
+    const appMediaPlayerResumeControl = useMediaResumeControl();
+    const appMediaPlayerPauseControl = useMediaPauseControl();
+    const appMediaPlayerForwardBackwardControl = useMediaForwardBackwardControl();
+    const getSongListArray = useAppSelector(state => state.mediaPlayerDatas.songLists);
+    const getCurrentPlayIndex = useAppSelector(state => state.mediaPlayerDatas.currentPlayIndex);
+    const getMediaListIsLoading = useAppSelector(state => state.mediaPlayerDatas.isLoading);
+    const getMediaTotalCount = useAppSelector(state => state.mediaPlayerDatas.totalCount);
 
-    const [allSongsList, setAllSongsLists] = useState<MusicListTypes[]>([]);
+    // const getIsMediaPlaying = useAppSelector(state => state.mediaPlayerDatas.totalCount);
+
+
 
     useEffect(() => {
+        fetchSongLists();
+    }, []);
+
+    const fetchSongLists = () => {
         requestStoragePermission().then((requestStatus: boolean) => {
 
             if (requestStatus) {
-
-                readAllFilesByExtension('.mp3').then((files) => {
-                    if (Array.isArray(files)) {
-                        setAllSongsLists(files);
-                    }
-                })
+                if (getSongListArray.length === 0) {
+                    appDispatch(setMediaisLoading(true));
+                    readAllFilesByExtension('.mp3').then((files) => {
+                        appDispatch(setMediaTotalCount(files.length));
+                        appDispatch(setSongLists(files));
+                        appDispatch(setMediaisLoading(false));
+                    });
+                }
             } else {
                 Alert.alert('Permission', 'Media read perssion required to access the local files.', [
                     { text: 'Exit', onPress: () => BackHandler.exitApp() },
                     { text: 'Open Setting', onPress: openAppSetting },
-                ]);
+                ], { cancelable: false });
             }
 
         })
-    }, []);
-
-
-
-    const resumeSong = () => {
-        soundManager.resumeSound();
     }
 
+
+
+    const playResumeSong = (status: 'play' | 'pause') => {
+        // appSnackbar({ visible: true, message: 'hagfuiagfdugafuooihauohfaohuoSAHF' });
+        if (status === 'play') {
+            appMediaPlayerResumeControl();
+        } else {
+            appMediaPlayerPauseControl();
+        }
+    }
+    // console.log(appMediaPlayerDetails);
 
 
 
@@ -57,24 +80,46 @@ const HomePage = () => {
                     <Appbar.Action icon="magnify" />
                     <Appbar.Action icon="dots-vertical" />
                 </Appbar.Header>
-                <ScrollView style={{ flexGrow: 1, borderTopRightRadius: 20, borderTopLeftRadius: 20, backgroundColor: getPaperTheme.colors.background }}>
-                    <MusicListComp musicsList={allSongsList} />
-                </ScrollView>
+
+                {getMediaListIsLoading && <View style={{ flexGrow: 1 }}>
+                    <View style={{ margin: 'auto' }}>
+                        <ActivityIndicator animating={true} size={60} color={getPaperTheme.colors.brandColor} />
+                        <Text style={{ marginTop: 10 }}>Loading...</Text>
+                    </View>
+                </View>}
+                {(getMediaTotalCount === 0 && !getMediaListIsLoading) && <View style={{ flexGrow: 1 }}>
+                    <View style={{ margin: 'auto' }}>
+                        <View style={{ paddingHorizontal: 50 }}>
+                            <Icon source={'folder-search-outline'} size={70} color={getPaperTheme.colors.brandColor} />
+                        </View>
+                        <Text style={{ marginTop: 10, textAlign: 'center' }}>No media was found!</Text>
+                        <Button icon='cached' onPress={fetchSongLists}>Retry</Button>
+                    </View>
+                </View>}
+                {(getMediaTotalCount !== 0 && !getMediaListIsLoading) &&
+                    <MusicListComp musicsList={getSongListArray} styleOveride={{ borderTopRightRadius: 20, borderTopLeftRadius: 20, backgroundColor: getPaperTheme.colors.background }} />
+                }
+
+
+
                 <View style={{ backgroundColor: getPaperTheme.colors.background }}>
                     <View style={{ borderRadius: 30, margin: 5, marginTop: 0, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: getPaperTheme.colors.lightHash, flexDirection: 'row' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, width: '50%', justifyContent: 'flex-start' }}>
-                            <SpinAnimationComp>
+                            <SpinAnimationComp animation={(appMediaPlayerDetails.isPlaying ? true : false)}>
                                 <Icon source="music-circle-outline" size={35} />
                             </SpinAnimationComp>
                             <View>
-                                <Text numberOfLines={1} > song name</Text>
+                                <Text numberOfLines={1} >{appMediaPlayerDetails.songName}</Text>
                             </View>
 
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', width: '50%', justifyContent: 'flex-end' }}>
-                            <IconButton icon="skip-backward" size={20} onPress={() => console.log('Pressed')} />
-                            <IconButton icon="play" size={20} onPress={() => resumeSong()} />
-                            <IconButton icon="skip-forward" size={20} onPress={() => console.log('Pressed')} />
+                            <IconButton icon="skip-backward" size={20} onPress={() => appMediaPlayerForwardBackwardControl('backward')} />
+                            {appMediaPlayerDetails.isPlaying ? <IconButton icon="pause" size={20} onPress={() => playResumeSong('pause')} /> :
+                                <IconButton icon="play" size={20} onPress={() => playResumeSong('play')} />}
+
+
+                            <IconButton icon="skip-forward" size={20} onPress={() => appMediaPlayerForwardBackwardControl('forward')} />
                         </View>
 
                     </View>

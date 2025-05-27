@@ -1,57 +1,56 @@
-import { FC, Fragment, useRef, useState } from "react";
-import { View } from "react-native";
-import { Divider, List, Text } from "react-native-paper";
+import React, { FC, memo, useCallback } from "react";
+import { Divider, List, useTheme } from "react-native-paper";
+import { FlatList, StyleProp, ViewStyle } from "react-native";
 import { MusicListTypes } from "../utilities/global.types";
-// import Sound from 'react-native-sound';
-import soundManager from "../utilities/soundManager";
+import { useMediaPlayControl } from "./customHooks/useMediaController";
+import { useAppSelector } from "../reduxStore";
+import { AppThemeType } from "../config/MyThemes";
 
-
-// Sound.setCategory('Playback');
-
+// Props
 interface PropsType {
-    musicsList: MusicListTypes[]
+    musicsList: MusicListTypes[];
+    styleOveride: StyleProp<ViewStyle>;
 }
 
-const MusicListComp: FC<PropsType> = ({ musicsList }) => {
-    // const whoosh: any = useRef(null);
-    const playFile = async (uri: string) => {
+const ListItem = ({ songName, fileIndex, onPress, selectedIndex, selectedBackgroundColor }: { songName: string; fileIndex: number; onPress: (index: number) => void; selectedIndex: number | null, selectedBackgroundColor: string }) => (
 
+    <List.Item
+        title={songName}
+        description="song description"
+        style={{ backgroundColor: selectedIndex === fileIndex ? selectedBackgroundColor : 'transparent' }}
+        left={props => <List.Icon {...props} icon="music" />}
+        right={props => <List.Icon {...props} icon="dots-vertical" />}
+        onPress={() => onPress(fileIndex)}
+    />
+);
 
-        try {
+const MusicListComp: FC<PropsType> = ({ musicsList, styleOveride }) => {
+    const playControl = useMediaPlayControl();
+    const getCurrentPlayIndex = useAppSelector(state => state.mediaPlayerDatas.currentPlayIndex);
+    const getPaperTheme = useTheme<AppThemeType>();
+    const handlePlay = useCallback((fileIndex: number) => {
+        playControl({ fileIndex });
+    }, [playControl]);
 
-            soundManager.playSound('file://' + uri);
+    const renderItem = useCallback(({ item, index }: { item: MusicListTypes; index: number }) =>
+        (<ListItem songName={item.fileName} fileIndex={index} onPress={handlePlay} selectedIndex={getCurrentPlayIndex} selectedBackgroundColor={getPaperTheme.colors.lightHash} />),
+        [handlePlay]
+    );
 
-
-            // console.log('volume: ' + whoosh.current.getVolume());
-            // console.log('pan: ' + whoosh.current.getPan());
-            // console.log('loops: ' + whoosh.current.getNumberOfLoops());
-        } catch (error) {
-            console.log(error);
-
-
-        }
-
-
-
-
-    };
-
-   
     return (
-        <>
-            <View>
-                {musicsList.map((data, index) => {
-                    return (<Fragment key={index}><List.Item
-                        title={data.fileName}
-                        description="Item description"
-                        left={props => <List.Icon {...props} icon="music" />}
-                        right={props => <List.Icon {...props} icon="dots-vertical" />}
-                        onPress={() => playFile(data.filePath)}
-                    /><Divider leftInset horizontalInset /></Fragment>)
-                })}
-            </View>
-        </>
-    )
-}
+        <FlatList
+            style={styleOveride}
+            data={musicsList}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={renderItem}
+            ItemSeparatorComponent={DividerWrapper}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+        />
+    );
+};
 
-export default MusicListComp;
+const DividerWrapper = () => <Divider leftInset horizontalInset />;
+
+export default memo(MusicListComp);
